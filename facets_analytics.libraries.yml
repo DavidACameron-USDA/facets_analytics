@@ -1,0 +1,6 @@
+facets_analytics:
+  version: VERSION
+  js:
+    js/facets-analytics.js: {  }
+  dependencies:
+    - google_analytics/google_analytics

@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * @file
+ * Contains hooks and other functions for the Facets Analytics module.
+ */
+
+use Drupal\Core\Block\BlockPluginInterface;
+
+/**
+ * Implements hook_block_view_BASE_BLOCK_ID_alter().
+ */
+function facets_analytics_block_view_facet_block_alter(array &$build, BlockPluginInterface $block) {
+  $build['#attached']['library'][] = 'facets_analytics/facets_analytics';
+}
