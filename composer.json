@@ -1,0 +1,16 @@
+{
+  "name": "drupal/facets_analytics_events",
+  "description": "Adds Google Analytics Event tracking to Facets.",
+  "type": "drupal-module",
+  "authors": [
+    {
+      "name": "David Cameron (dcam)",
+      "homepage": "https://www.drupal.org/u/dcam",
+      "role": "Maintainer"
+    }
+  ],
+  "license": "GPL-2.0+",
+  "require": {
+    "drupal/google_analytics": "^2.x"
+  }
+}
