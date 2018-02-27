@@ -1,6 +1,6 @@
 {
-  "name": "drupal/facets_analytics_events",
-  "description": "Adds Google Analytics Event tracking to Facets.",
+  "name": "drupal/facets_analytics",
+  "description": "Adds Google Analytics tracking to Facets.",
   "type": "drupal-module",
   "authors": [
     {
