@@ -11,6 +11,9 @@
   ],
   "license": "GPL-2.0+",
   "require": {
-    "drupal/google_analytics": "^2.x"
+    "drupal/facets": "1.x"
+  },
+  "suggest": {
+    "drupal/google_analytics": "Facets Analytics will not work without the analytics.js code on the page.  It must be inserted by another module or theme."
   }
 }

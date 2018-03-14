@@ -4,4 +4,4 @@ description: 'Adds Google Analytics tracking to Facets.'
 package: Statistics
 core: 8.x
 dependencies:
-  - drupal:google_analytics
+  - drupal:facets
