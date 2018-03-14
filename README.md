@@ -20,11 +20,12 @@ capabilities of the Site Search, but it does allow us to get around those
 issues.
 
 ## Requirements
-This module is dependent on the Facets module and has been confirmed to work
-with the 1.x branch.  Version 1.0-beta2 of Facets was the latest release at the
-time this was written.  Only certain facet widgets are supported, including
-the _List of Checkboxes_ and _List of Links_ widgets.  You may request that
-other widgets be supported by posting in the module's issue queue.
+This module is dependent on the [Facets](https://www.drupal.org/project/facets)
+module and has been confirmed to work with the 1.x branch.  Version 1.0-beta2 of
+Facets was the latest release at the time this was written.  Only certain facet
+widgets are supported, including the _List of Checkboxes_ and _List of Links_
+widgets.  You may request that other widgets be supported by posting in the
+module's issue queue.
 
 This module is also dependent on having the analytics.js script on the page.
 There is no requirement for a specific module to provide this.  You may use any
