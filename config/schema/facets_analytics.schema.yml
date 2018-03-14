@@ -7,3 +7,6 @@ facets.facet.*.third_party.facets_analytics:
     track:
       type: boolean
       label: Whether this facet should be tracked by Google Analytics
+    category:
+      type: string
+      label: A custom event category name

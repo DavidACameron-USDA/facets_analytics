@@ -29,9 +29,11 @@ function facets_analytics_block_view_facet_block_alter(array &$build, BlockPlugi
     return;
   }
   $is_tracked = $facet->getThirdPartySetting('facets_analytics', 'track', FALSE);
+  $custom_category = $facet->getThirdPartySetting('facets_analytics', 'category', '');
+  $category = $custom_category ?: $facet->label();
   if ($is_tracked) {
     $build['#attached']['library'][] = 'facets_analytics/facets_analytics';
-    $build['#attached']['drupalSettings']['facets_analytics']['enabledFacets'][$facet_id] = $facet->label();
+    $build['#attached']['drupalSettings']['facets_analytics']['enabledFacets'][$facet_id] = $category;
   }
 }
 
@@ -90,6 +92,20 @@ function _facets_analytics_track_form(array &$form, FacetInterface $facet) {
     '#title' => t('Track facet clicks with Google Analytics events.'),
     '#default_value' => $facet->getThirdPartySetting('facets_analytics', 'track', FALSE),
   ];
+  $form['widget_config']['facets_analytics']['category'] = [
+    '#type' => 'textfield',
+    '#title' => t('Provide a custom event category name'),
+    '#description' => t("This text will be displayed as the event category Google Analytics.  Leave it empty to display the facet name by default."),
+    // The maximum length of the Event Category field is 150 bytes.
+    // @see https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventCategory
+    '#maxlength' => 150,
+    '#default_value' => $facet->getThirdPartySetting('facets_analytics', 'category', ''),
+    '#states' => [
+      'enabled' => [
+        ':input[name="widget_config[facets_analytics][enable_tracking]"]' => ['checked' => TRUE],
+      ],
+    ],
+  ];
   // $form['#entity_builders'] would be preferable to use here, but
   // FacetSettingsForm::submitForm() overrides the parent without invoking the
   // entity_builder callbacks.
@@ -103,9 +119,15 @@ function _facets_analytics_track_form(array &$form, FacetInterface $facet) {
  */
 function facets_analytics_form_facets_facet_edit_form_submit(&$form, FormStateInterface $form_state) {
   $facet = _facets_analytics_get_facet_from_form_state($form_state);
+
   $track_element = ['widget_config', 'facets_analytics', 'enable_tracking'];
   $track = $form_state->getValue($track_element, 0) ? TRUE : FALSE;
   $facet->setThirdPartySetting('facets_analytics', 'track', $track);
+
+  $category_element = ['widget_config', 'facets_analytics', 'category'];
+  $category = $form_state->getValue($category_element, '');
+  $facet->setThirdPartySetting('facets_analytics', 'category', $category);
+
   $facet->save();
 }
 
