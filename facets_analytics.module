@@ -5,11 +5,121 @@
  * Contains hooks and other functions for the Facets Analytics module.
  */
 
+use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Core\Block\BlockPluginInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\facets\FacetInterface;
 
 /**
- * Implements hook_block_view_BASE_BLOCK_ID_alter().
+ * Implements hook_block_view_BASE_BLOCK_ID_alter() for facet_block.
  */
 function facets_analytics_block_view_facet_block_alter(array &$build, BlockPluginInterface $block) {
-  $build['#attached']['library'][] = 'facets_analytics/facets_analytics';
+  // This would be a lot easier if the facet entity was included in $build or
+  // $block, but due to lazy loading it isn't.  In order to get at the facet's
+  // configuration it must be manually loaded.
+  $facet_id = substr($block->getPluginId(), 12);
+  try {
+    /** @var \Drupal\facets\FacetInterface $facet */
+    $facet = \Drupal::entityTypeManager()->getStorage('facets_facet')->load($facet_id);
+  }
+  catch (InvalidPluginDefinitionException $e) {
+    $message = 'The facet %facet could not be loaded.';
+    $context = ['%facet' => $facet_id];
+    \Drupal::logger('facets_analytics')->error($message, $context);
+    return;
+  }
+  $is_tracked = $facet->getThirdPartySetting('facets_analytics', 'track', FALSE);
+  if ($is_tracked) {
+    $build['#attached']['library'][] = 'facets_analytics/facets_analytics';
+    $build['#attached']['drupalSettings']['facets_analytics']['enabledFacets'][$facet_id] = $facet->label();
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for facets_facet_edit_form.
+ */
+function facets_analytics_form_facets_facet_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $form['widget_config']['facets_analytics'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Facets Analytics'),
+  ];
+
+  $facet = _facets_analytics_get_facet_from_form_state($form_state);
+  $type = $facet->getWidget()['type'];
+  if (!in_array($type, _facets_analytics_supported_widget_types())) {
+    _facets_analytics_no_support_form($form);
+    return;
+  }
+  _facets_analytics_track_form($form, $facet);
+}
+
+/**
+ * Returns an array of supported widget types.
+ *
+ * @return string[]
+ *   An array of supported widget types.
+ */
+function _facets_analytics_supported_widget_types() {
+  return [
+    'checkbox',
+    'links',
+  ];
+}
+
+/**
+ * Builds form elements in the case that a widget is not supported.
+ *
+ * @param array $form
+ *   The base form, including the facets_analytics fieldset.
+ */
+function _facets_analytics_no_support_form(array &$form) {
+  $form['widget_config']['facets_analytics']['no_support'] = [
+    '#markup' => t("Facets Analytics does not support this widget type.  Post an issue in the module's issue queue if you would like for support to be added."),
+  ];
+}
+
+/**
+ * Builds form elements in the case that a widget is supported.
+ *
+ * @param array $form
+ *   The base form, including the facets_analytics fieldset.
+ */
+function _facets_analytics_track_form(array &$form, FacetInterface $facet) {
+  $form['widget_config']['facets_analytics']['enable_tracking'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Track facet clicks with Google Analytics events.'),
+    '#default_value' => $facet->getThirdPartySetting('facets_analytics', 'track', FALSE),
+  ];
+  // $form['#entity_builders'] would be preferable to use here, but
+  // FacetSettingsForm::submitForm() overrides the parent without invoking the
+  // entity_builder callbacks.
+  $form['actions']['submit']['#submit'][] = 'facets_analytics_form_facets_facet_edit_form_submit';
+}
+
+/**
+ * Entity builder for the facet settings form with analytics tracking options.
+ *
+ * @see facets_analytics_form_facets_facet_edit_form_alter()
+ */
+function facets_analytics_form_facets_facet_edit_form_submit(&$form, FormStateInterface $form_state) {
+  $facet = _facets_analytics_get_facet_from_form_state($form_state);
+  $track_element = ['widget_config', 'facets_analytics', 'enable_tracking'];
+  $track = $form_state->getValue($track_element, 0) ? TRUE : FALSE;
+  $facet->setThirdPartySetting('facets_analytics', 'track', $track);
+  $facet->save();
+}
+
+/**
+ * Extracts a Facet object from a FormStateInterface object.
+ *
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state containing the facet object.
+ *
+ * @return \Drupal\facets\Entity\Facet
+ *   The extracted Facet object.
+ */
+function _facets_analytics_get_facet_from_form_state(FormStateInterface $form_state) {
+  /** @var \Drupal\facets\Form\FacetForm $form_object */
+  $form_object = $form_state->getBuildInfo()['callback_object'];
+  return $form_object->getEntity();
 }

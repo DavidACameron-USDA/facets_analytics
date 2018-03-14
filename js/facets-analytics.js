@@ -12,7 +12,12 @@
   }
 
   $('.facet-item').click(event, function() {
-    var category = $(this).parent().attr('data-drupal-facet-id');
+    var id = $(this).parent().attr('data-drupal-facet-id');
+    if (drupalSettings.facets_analytics.enabledFacets[id] === undefined) {
+      return;
+    }
+
+    var category = drupalSettings.facets_analytics.enabledFacets[id];
     var action = 'Facet activated';
     var anchor = $(this).find('a');
     var checkbox = $(this).find(':checkbox');

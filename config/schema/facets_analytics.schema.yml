@@ -1,0 +1,9 @@
+# Schema for the configuration files of the Facets Analytics module.
+
+facets.facet.*.third_party.facets_analytics:
+  type: mapping
+  label: Facet entity third-party settings
+  mapping:
+    track:
+      type: boolean
+      label: Whether this facet should be tracked by Google Analytics

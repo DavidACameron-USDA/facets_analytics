@@ -3,4 +3,5 @@ facets_analytics:
   js:
     js/facets-analytics.js: {  }
   dependencies:
+    - core/drupalSettings
     - google_analytics/google_analytics
